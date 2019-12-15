@@ -1,0 +1,45 @@
+#pageTitle{
+    color: cadetblue;
+    text-decoration: none;
+    text-align: center;
+    text-transform: uppercase;
+    margin: 15px;
+}
+
+.titleContainer{
+    width: 100%;
+    border-bottom: 1px solid cadetblue;
+    margin-bottom: 15px;
+}
+
+#timer-label{
+    font-size: 24px;
+    text-transform: uppercase;
+}
+
+.labelTimerContainer{
+    border-bottom: 1px solid grey;
+}
+
+#time-left{
+    text-align: center;
+    font-size: 34px;
+    margin-top: 60px;
+}
+
+.btn{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#session-label, #break-label{
+    text-transform: uppercase;
+    color: grey;
+    margin-top: 15px;
+}
+
+#break-length, #session-length{
+    margin: 15px 0px 45px 25px;
+    color: green;
+    font-weight: bold;
+}

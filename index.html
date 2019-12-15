@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <title>Pomodoro clock</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.6/marked.js"></script>
+
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <script type="text/babel">
+    // ================================================================
+    class App extends React.Component{
+        
+        defaultBreakLength = 5
+        defaultSessionLength = 25
+        defaultTimeLeft = "25:00"
+        interval = null
+
+        constructor(props){
+            super(props)
+            this.state = {
+                breakLength: this.defaultBreakLength,
+                sessionLength: this.defaultSessionLength,
+                timeLeft: this.defaultTimeLeft,
+                timerIsRunning: false,
+                firstClickForStartButton: true,
+                isInSessionMode: true
+            }
+
+            this.handleReset = this.handleReset.bind(this)
+            this.handleIncrementBreak = this.handleIncrementBreak.bind(this)
+            this.handleDecrementBreak = this.handleDecrementBreak.bind(this)
+
+            this.handleDecrementSession = this.handleDecrementSession.bind(this)
+            this.handleIncrementSession = this.handleIncrementSession.bind(this)
+
+            this.handleStartStopClick = this.handleStartStopClick.bind(this)
+
+        }
+
+        handleStartStopClick(e){
+            console.log(">>> in handleStartStopClick")
+            if(this.state.timerIsRunning){
+                console.log(">>> in stop case")
+                this.setState({
+                    timerIsRunning: false
+                })
+                clearInterval(this.interval)
+            }else{
+                console.log(">>> in start case")
+                if(this.state.firstClickForStartButton){
+                    console.log(">>> in first time click to start")
+                    let newTimeLeft = this.state.sessionLength.toString(10).padStart(2, '0') + ':' + '00'
+                    this.setState({
+                        timerIsRunning: true,
+                        timeLeft: newTimeLeft,
+                        firstClickForStartButton: false
+                    })
+                    this.interval = setInterval(() => {
+                        console.log(">> call update timer")
+                        this.updateTimer()
+                    }, 1000);
+                }else{
+                    console.log(">>> in resume timer mode")
+                    this.setState({
+                        timerIsRunning: true,
+                        firstClickForStartButton: false
+                    })
+                    this.interval = setInterval(() => {
+                        console.log(">> call update timer")
+                        this.updateTimer()
+                    }, 1000);
+                }
+                
+
+            }
+
+        }
+
+        updateTimer(){
+            let minuteRemainString =  this.state.timeLeft.split(":")[0]
+            let secondRemainString =  this.state.timeLeft.split(":")[1]
+            let minuteRemainNumber = parseInt(minuteRemainString)
+            let secondRemainNumber = parseInt(secondRemainString)
+
+            if(minuteRemainNumber == 0 && secondRemainNumber == 0){
+                console.log("+++ should switch timer")
+                if(this.state.isInSessionMode){
+                    console.log("+++ should switch to break mode")
+                    let newTimeLeftFromBreak = this.state.breakLength.toString(10).padStart(2, '0') + ':' + '00'
+                    this.audioBeep.play()
+                    this.setState({
+                        isInSessionMode: false,
+                        timeLeft: newTimeLeftFromBreak
+                    })
+                }else{
+                    console.log("+++ should switch to session mode")
+                    let newTimeLeftFromSession = this.state.sessionLength.toString(10).padStart(2, '0') + ':' + '00'
+                    this.audioBeep.play()
+                    this.setState({
+                        isInSessionMode: true,
+                        timeLeft: newTimeLeftFromSession
+                    })
+                }
+            }else{
+                if(secondRemainNumber == 0){
+                    secondRemainNumber = 59
+                    minuteRemainNumber = minuteRemainNumber - 1
+                }else{
+                    secondRemainNumber--
+                }
+
+                let updatedTimeLeft = minuteRemainNumber.toString(10).padStart(2, '0') + ':' + secondRemainNumber.toString(10).padStart(2, '0')
+                this.setState({
+                    timeLeft: updatedTimeLeft
+                })
+            }
+        }
+
+        handleIncrementBreak(e){
+            console.log(">> click on handle handleIncrementBreak")
+            if(this.state.breakLength < 60 ){
+                let newBreakLength = this.state.breakLength + 1
+                this.setState({
+                    breakLength: newBreakLength
+                })
+            }
+        }
+        handleDecrementBreak(e){
+            console.log(">> click on  handleDecrementBreak")
+            if( this.state.breakLength > 1){
+                let newBreakLength = this.state.breakLength - 1
+                this.setState({
+                    breakLength: newBreakLength
+                })
+            }
+        }
+
+
+        handleIncrementSession(e){
+            console.log(">> click on handle handleIncrementSession")
+            if(this.state.sessionLength < 60 ){
+                let newSessionLength = this.state.sessionLength + 1
+                let newTimeLeftFromSession = newSessionLength.toString(10).padStart(2, '0') + ':' + '00'
+                this.setState({
+                    sessionLength: newSessionLength,
+                    timeLeft: newTimeLeftFromSession
+                })
+            }
+        }
+        handleDecrementSession(e){
+            console.log(">> click on  handleDecrementSession")
+            if(this.state.sessionLength > 1){
+                let newSessionLength = this.state.sessionLength - 1
+                let newTimeLeftFromSession = newSessionLength.toString(10).padStart(2, '0') + ':' + '00'
+                this.setState({
+                    sessionLength: newSessionLength,
+                    timeLeft: newTimeLeftFromSession
+                })
+            }
+        }
+
+        handleReset(e){
+            console.log(">>> click on reset ")
+            this.audioBeep.pause();
+            this.audioBeep.currentTime = 0;
+            clearInterval(this.interval)
+
+            this.setState({
+                breakLength: this.defaultBreakLength,
+                sessionLength: this.defaultSessionLength,
+                timeLeft: this.defaultTimeLeft,
+                timerIsRunning: false,
+                firstClickForStartButton: true,
+                isInSessionMode: true
+            })
+        }
+
+        render(){
+            return(
+                <div className="container">
+                    <div className="titleContainer">
+                        <h1 id="pageTitle">My Podomoro Clock</h1>
+                    </div>
+                    <div className="row">
+                            <div className="col-6">
+                                <p id="break-label">Break Length : </p>
+                                <button className="btn btn-secondary" id="break-decrement" onClick={this.handleDecrementBreak}><i className="fa fa-arrow-down"></i> Decrement Break</button>
+                                <button className="btn btn-secondary" id="break-increment" onClick={this.handleIncrementBreak}><i className="fa fa-arrow-up"></i> Increment Break</button>
+                                <p id="break-length">{ this.state.breakLength}</p>
+
+                                <p id="session-label">Session Length : </p>
+                                <button className="btn btn-secondary" id="session-decrement" onClick={this.handleDecrementSession}><i className="fa fa-arrow-down"></i> Decrement session</button>
+                                <button className="btn btn-secondary" id="session-increment" onClick={this.handleIncrementSession}><i className="fa fa-arrow-up"></i> Increment session</button>
+                                <p id="session-length">{ this.state.sessionLength}</p>
+
+                                <button className="btn btn-primary" id="start_stop" onClick={this.handleStartStopClick}>Start/Stop</button>
+                                <button className="btn btn-light" id="reset" onClick={this.handleReset}>Reset</button>
+                                
+                            </div>
+                            <div className="col-6">
+                                <div className="labelTimerContainer">
+                                    <p id="timer-label">
+                                        {this.state.isInSessionMode ? 'In Session Mode' : 'In Break Mode'}
+                                    </p>
+                                </div>
+                                <p id="time-left">{ this.state.timeLeft }</p>
+                            </div>    
+                    </div>
+                    
+                    <audio id="beep" preload="auto" src="https://goo.gl/65cBl1" ref={(audio) => { this.audioBeep = audio; }} />
+                </div>
+            )
+        }
+    }
+    // ================================================================
+    ReactDOM.render(<App />, document.getElementById('app'));
+
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+    </script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+</body>
+
+</html>
